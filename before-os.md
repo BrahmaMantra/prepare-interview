@@ -72,3 +72,4 @@
 参考：
 https://zhuanlan.zhihu.com/p/69334474
 https://blog.51cto.com/u_5122542/906655
+https://www.amd.com/content/dam/amd/en/documents/processor-tech-docs/programmer-references/24592.pdf

@@ -27,7 +27,7 @@
 - 介绍一下实模式，保护模式，实模式是怎么寻址的？  
 - 说一下电脑从开机到进bios选系统的过程
 
-我讲这些实模式保护模式的时候扯到了bios相关的，什么电自检后进入实模式，之后运行bios上的指令，通过boot sequence找到引导后进入保护模式啥的，具体看[这里](https://github.com/BrahmaMantra/prepare-interview/blob/main/before-os.md),他才问了我第三个内容  
+我讲这些实模式保护模式的时候扯到了bios相关的，什么电自检后进入实模式，之后运行bios上的指令，通过boot sequence找到引导后进入保护模式啥的，具体看[这里](https://brahmamantra.github.io/2024/12/27/before-os/#more),他才问了我第三个内容  
 
 感觉是我简历里有内存项目的原因，日常实习不应该问到我这么深吧qwq（幸好我真会）
 ### Rust相关
