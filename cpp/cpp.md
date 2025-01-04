@@ -177,3 +177,168 @@ p = &b;  // 非法，不能改变指针指向
 | 简单替换       | 否                                           | 是                                         |
 | 无类型限制     | 否                                           | 是                                         |
 | 潜在错误       | 少                                           | 多（如缺少括号导致的优先级问题）           |
+
+
+### 16.数组传参
+在 C++ 中，buf 和 &buf 在传递给函数时有不同的含义，具体取决于函数的参数类型。以下是它们的区别：
+
+buf
+buf 是一个字符数组，当它被传递给函数时，会被隐式转换为指向数组第一个元素的指针，即 char* 类型。
+~~~ cpp
+char buf[1024];
+some_function(buf); // buf 被转换为 char*
+~~~
+&buf
+&buf 是一个指向整个数组的指针，其类型是 char (*)[1024]，即指向一个包含 1024 个字符的数组的指针。
+``` cpp
+char buf[1024];
+some_function(&buf); // &buf 的类型是 char (*)[1024]
+```
+示例
+以下是一个示例，展示了 buf 和 &buf 的区别：
+``` cpp
+#include <iostream>
+#include <cstring>
+
+void print_size(char* ptr) {
+    std::cout << "Size of char* ptr: " << sizeof(ptr) << std::endl;
+}
+
+void print_size(char (*ptr)[1024]) {
+    std::cout << "Size of char (*ptr)[1024]: " << sizeof(*ptr) << std::endl;
+}
+
+int main() {
+    char buf[1024];
+    bzero(buf, sizeof(buf));
+
+    print_size(buf);   // 传递 char* 类型
+    print_size(&buf);  // 传递 char (*)[1024] 类型
+
+    return 0;
+}
+```
+输出如下：
+``` bash
+dragonos@DragonOS-A18-HP:~/note/prepare-interview$ ./test 
+Size of char* ptr: 8
+Size of char (*ptr)[1024]: 1024
+```
+
+### 17.enum和enum class
+在 C++ 中，`enum` 和 `enum class` 都用于定义枚举类型，但它们有一些重要的区别。以下是它们的主要区别：
+
+### `enum`
+
+`enum` 是传统的枚举类型，来自 C 语言。它的特点如下：
+
+1. **作用域**：`enum` 定义的枚举成员在定义它们的作用域内是全局的。
+2. **隐式转换**：`enum` 枚举成员可以隐式转换为整数类型。
+3. **类型安全**：`enum` 不提供类型安全，不同的枚举类型的成员可以互相比较。
+
+#### 示例
+
+```cpp
+#include <iostream>
+
+enum Color {
+    RED,
+    GREEN,
+    BLUE
+};
+
+enum TrafficLight {
+    RED_LIGHT,
+    GREEN_LIGHT,
+    YELLOW_LIGHT
+};
+
+int main() {
+    Color color = RED;
+    TrafficLight light = RED_LIGHT;
+
+    // 隐式转换为整数
+    int colorValue = color;
+    std::cout << "Color value: " << colorValue << std::endl;
+
+    // 不同枚举类型的成员可以比较
+    if (color == light) {
+        std::cout << "Color and TrafficLight are equal!" << std::endl;
+    } else {
+        std::cout << "Color and TrafficLight are not equal!" << std::endl;
+    }
+
+    return 0;
+}
+```
+
+### `enum class`
+
+`enum class` 是 C++11 引入的强类型枚举类型。它的特点如下：
+
+1. **作用域**：`enum class` 定义的枚举成员在枚举类型的作用域内。
+2. **隐式转换**：`enum class` 枚举成员不能隐式转换为整数类型，需要显式转换。
+3. **类型安全**：`enum class` 提供类型安全，不同的枚举类型的成员不能互相比较。
+
+#### 示例
+
+```cpp
+#include <iostream>
+
+enum class Color {
+    RED,
+    GREEN,
+    BLUE
+};
+
+enum class TrafficLight {
+    RED,
+    GREEN,
+    YELLOW
+};
+
+int main() {
+    Color color = Color::RED;
+    TrafficLight light = TrafficLight::RED;
+
+    // 不能隐式转换为整数，需要显式转换
+    int colorValue = static_cast<int>(color);
+    std::cout << "Color value: " << colorValue << std::endl;
+
+    // 不同枚举类型的成员不能比较
+    // if (color == light) { // 错误：不同枚举类型不能比较
+    //     std::cout << "Color and TrafficLight are equal!" << std::endl;
+    // } else {
+    //     std::cout << "Color and TrafficLight are not equal!" << std::endl;
+    // }
+
+    return 0;
+}
+```
+
+### 总结
+
+- **作用域**：
+  - `enum`：枚举成员在定义它们的作用域内是全局的。
+  - `enum class`：枚举成员在枚举类型的作用域内。
+
+- **隐式转换**：
+  - `enum`：枚举成员可以隐式转换为整数类型。
+  - `enum class`：枚举成员不能隐式转换为整数类型，需要显式转换。
+
+- **类型安全**：
+  - `enum`：不提供类型安全，不同的枚举类型的成员可以互相比较。
+  - `enum class`：提供类型安全，不同的枚举类型的成员不能互相比较。
+
+使用 `enum class` 可以提高代码的类型安全性和可读性，避免意外的类型转换和比较。
+
+### 奇怪的问题
+
+#### ssize_t write_bytes = (sockfd, buf, sizeof(buf));
+正如你所看，我们缺少了read或者write，但是居然可以过编译，那么write_bytes返回的到底是啥？
+~~~ cpp
+dragonos@DragonOS-A18-HP:~/user_fz/cpp-web-server/bin$ ./client 
+a
+write_bytes is 1024
+~~~
+事实证明，逗号表达式会依次计算每个子表达式的值，并返回最后一个子表达式的值。在这种情况下，(sockfd, buf, sizeof(buf)) 的返回值是 sizeof(buf)，即 1024。
