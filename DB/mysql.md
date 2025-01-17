@@ -5,5 +5,26 @@
     - B+ 数的层数为 z
     - Total =x^(z-1) *y 也就是说总数会等于 x 的 z-1 次方 与 Y 的乘积。
   
-- X=? 索引也也不例外，都会有 File Header (38 byte)、Page Header (56索引也也不例外，都会有 File Header (38 byte)、Page Header (56Byte)、Infimum + Supermum（26 byte）、File Trailer（8byte）, 再加上页目录，大概 1k 左右。
+- X=? 
+索引也也不例外，都会有 File Header (38 byte)、Page Header (56Byte)、Infimum + Supermum（26 byte）、File Trailer（8byte）, 再加上页目录，大概 1k 左右。而页号也是固定的（4Byte）, 那么索引页中的一条数据也就是 12byte。  
 
+我们就当做它就是 1K, 那整个页的大小是 16K, 剩下 15k 用于存数据，在索引页中主要记录的是主键与页号，主键我们假设是 Bigint (8 byte),所以 x=15*1024/12≈1280 行。
+- Y=？
+叶子节点和非叶子节点的结构是一样的，同理，能放数据的空间也是 15k。但是叶子节点中存放的是真正的行数据，这个影响的因素就会多很多，比如，字段的类型，字段的数量。每行数据占用空间越大，页中所放的行数量就会越少。
+
+这里我们暂时按一条行数据1k来算，那一页就可以存15条，Y=15*1024/1000=15。
+
+根据上面的公式，Total =x^(z-1) *y 
+- 假设 B+ 树是2层，那就是 z = 2，total = (1280)*15=19200
+- 假设 B+ 树是3层，那就是 z = 3，total = (1280^2)*15=24,576,000≈2.45kw就是两千万！
+- 假设 B+ 树是4层，那就是 z = 4，total = (1280^3)*15=三百多亿
+
+所以说是有道理的，但是要看叶子结点一行的数据有多大，如果是1k左右就很合理
+
+## 索引失效
+1. 对索引进行表达式计算：explain select * from t_user where id + 1 = 10;
+2.  对索引隐式类型转换select * from t_user where phone = 1300000001;（要varchar但是输入bitint会失效，但反过来没事）
+3.  联合索引非最左匹配
+4.  在 WHERE 子句中，如果在 OR 前的条件列是索引列，而在 OR 后的条件列不是索引列：select * from t_user where id = 1 or age = 18;id是主键但age是普通列
+5.  对索引使用左或者左右模糊匹配
+6.  对索引使用函数：select * from t_user where length(name)=6;
