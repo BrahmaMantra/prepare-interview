@@ -28,3 +28,5 @@
 4.  在 WHERE 子句中，如果在 OR 前的条件列是索引列，而在 OR 后的条件列不是索引列：select * from t_user where id = 1 or age = 18;id是主键但age是普通列
 5.  对索引使用左或者左右模糊匹配
 6.  对索引使用函数：select * from t_user where length(name)=6;
+  
+
